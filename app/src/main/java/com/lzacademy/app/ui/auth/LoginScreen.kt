@@ -72,9 +72,9 @@ fun LoginScreen(
             .padding(horizontal = 24.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(Modifier.height(24.dp))
-        LZLogo(size = 76.dp)
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(16.dp))
+        LZLogo(size = 112.dp)
+        Spacer(Modifier.height(14.dp))
         LZText("LZ Academy", style = LZ.type.pageTitle, color = c.textPrimary)
         Spacer(Modifier.height(6.dp))
         LZText(
