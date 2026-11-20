@@ -1,0 +1,6 @@
+{
+  "name": "LZ Academy",
+  "description": "Plateforme éducative LZ Academy - Tableaux de bord étudiant, enseignant et administrateur",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,29 @@
+*.iml
+.gradle
+.kotlin
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+.env
+debug.keystore
+
+# Local browser-automation & crash artifacts
+.playwright-mcp/
+hs_err_pid*.log
+replay_pid*.log
+
+# Supabase transient CLI state (contains local project/org ids)
+supabase/.temp/
+
+# AI Studio generated delivery archives
+public/assets/aistudio/
