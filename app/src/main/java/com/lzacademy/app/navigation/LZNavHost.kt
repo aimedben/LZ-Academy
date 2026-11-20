@@ -183,12 +183,11 @@ fun LZNavHost(
         }
         composable(LZRoutes.AdminMore) {
             AdminMoreScreen(
-                onNavigateBack = { goTab(LZRoutes.AdminDashboard) },
+                onNavigateBack = { goTab(LZRoutes.AdminProfile) },
                 onShowMessage = onShowMessage,
                 onAvatarClick = onAvatarClick,
                 onOpenSubscriptions = { navController.navigate(LZRoutes.AdminSubscriptions) },
                 onOpenPacks = { navController.navigate(LZRoutes.AdminPacks) },
-                onOpenProfile = { navController.navigate(LZRoutes.AdminProfile) },
             )
         }
         composable(LZRoutes.AdminPacks) {
@@ -199,9 +198,9 @@ fun LZNavHost(
         }
         composable(LZRoutes.AdminProfile) {
             com.lzacademy.app.ui.admin.AdminProfileScreen(
-                onNavigateBack = { navController.popBackStack() },
                 onShowMessage = onShowMessage,
                 onOpenSettings = openSettings,
+                onOpenAcademy = { goTab(LZRoutes.AdminMore) },
             )
         }
         composable(LZRoutes.AdminSubscriptions) {

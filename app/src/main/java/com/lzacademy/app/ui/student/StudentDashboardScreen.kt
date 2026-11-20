@@ -38,7 +38,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.lzacademy.app.components.LZCalendarDayItem
 import com.lzacademy.app.components.LZDashboardSkeleton
 import com.lzacademy.app.components.LZEmptyState
 import com.lzacademy.app.components.LZGraduationIllustration
@@ -73,7 +72,6 @@ class StudentDashboardActions(
     val onBellClick: () -> Unit = {},
     val onAvatarClick: () -> Unit = {},
     val onNextLessonClick: () -> Unit = {},
-    val onDayClick: (Int) -> Unit = {},
     val onSubscriptionClick: () -> Unit = {},
     val onSeeAllNews: () -> Unit = {},
     val onAnnouncementOpened: (String) -> Unit = {},
@@ -152,7 +150,6 @@ fun StudentDashboardRoute(
                     onBellClick = { onNavigate(LZRoutes.StudentNotifications) },
                     onAvatarClick = onAvatarClick,
                     onNextLessonClick = { onNavigate(LZRoutes.StudentPlanning) },
-                    onDayClick = { onNavigate(LZRoutes.StudentPlanning) },
                     onSubscriptionClick = {
                         onShowMessage(
                             "Abonnement • $remaining/$total séances restantes • $statusText • renouvellement auprès de l'administration",
@@ -242,28 +239,8 @@ fun StudentDashboardScreen(
             )
         }
 
-        // Week strip • real lessons per day, tap jumps to the planning
         Column(
             Modifier.padding(horizontal = 20.dp).padding(top = 18.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            LZSectionHeader("Cette semaine")
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                data.week.forEach { day ->
-                    LZCalendarDayItem(
-                        dayLabel = day.label,
-                        dayNumber = day.number,
-                        selected = day.index == data.todayIndex,
-                        hasLesson = data.lessonsByDay[day.index].orEmpty().isNotEmpty(),
-                        onClick = { actions.onDayClick(day.index) },
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-            }
-        }
-
-        Column(
-            Modifier.padding(horizontal = 20.dp).padding(top = 18.dp, bottom = 28.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
             // Next lesson • honest empty state when the student has no real session
@@ -314,32 +291,39 @@ fun StudentDashboardScreen(
                     },
                 )
             }
+        }
 
-            // Featured teachers
-            TeacherShowcaseSection(
-                teachers = featuredTeachers,
-                onSeeAll = actions.onSeeAllTeachers,
-                onOpenProfile = actions.onTeacherClick,
-                onContact = actions.onContactTeacher,
-            )
+        // Featured teachers • full-bleed: the first card must touch the left edge
+        TeacherShowcaseSection(
+            teachers = featuredTeachers,
+            onSeeAll = actions.onSeeAllTeachers,
+            onOpenProfile = actions.onTeacherClick,
+            onContact = actions.onContactTeacher,
+            modifier = Modifier.padding(top = 18.dp),
+        )
 
-            // News • ultra-simple for kids: max 2 one-liners, tap = full list
-            if (data.announcements.isNotEmpty()) {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    LZSectionHeader("Actualités", actionLabel = "Voir tout", onAction = actions.onSeeAllNews)
-                    data.announcements.take(2).forEach { news ->
-                        KidNewsCard(
-                            title = news.title,
-                            subtitle = news.subtitle,
-                            icon = news.icon,
-                            accent = news.accent,
-                            unread = news.unread,
-                            onClick = actions.onSeeAllNews,
-                        )
-                    }
+        // News • ultra-simple for kids: max 2 one-liners, tap = full list
+        if (data.announcements.isNotEmpty()) {
+            Column(
+                Modifier.padding(horizontal = 20.dp).padding(top = 18.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                LZSectionHeader("Actualités", actionLabel = "Voir tout", onAction = actions.onSeeAllNews)
+                data.announcements.take(2).forEach { news ->
+                    KidNewsCard(
+                        title = news.title,
+                        subtitle = news.subtitle,
+                        icon = news.icon,
+                        accent = news.accent,
+                        unread = news.unread,
+                        onClick = actions.onSeeAllNews,
+                    )
                 }
             }
         }
+
+        // Single bottom breathing room for both cases (with or without news).
+        Spacer(Modifier.height(28.dp))
     }
 }
 

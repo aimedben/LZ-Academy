@@ -21,7 +21,6 @@ import androidx.compose.material.icons.rounded.Business
 import androidx.compose.material.icons.rounded.CloudDone
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Sell
 import androidx.compose.material.icons.rounded.Verified
 import androidx.compose.material3.Icon
@@ -48,7 +47,6 @@ fun AdminMoreScreen(
     onAvatarClick: () -> Unit,
     onOpenSubscriptions: () -> Unit = {},
     onOpenPacks: () -> Unit = {},
-    onOpenProfile: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -213,18 +211,11 @@ fun AdminMoreScreen(
                     LZText("Mon compte", style = LZ.type.cardTitle)
                     Spacer(Modifier.height(8.dp))
                     LZText(
-                        "Profil de l'administrateur : photo et informations personnelles, stockées sur l'appareil.",
+                        "Apparence, notifications et compte connecté. Le profil administrateur se trouve dans l'onglet Profil.",
                         style = LZ.type.secondary,
                         color = LZ.colors.textSecondary,
                     )
                     Spacer(Modifier.height(12.dp))
-                    LZPrimaryButton(
-                        text = "Profil admin",
-                        onClick = onOpenProfile,
-                        modifier = Modifier.fillMaxWidth(),
-                        leadingIcon = Icons.Rounded.Person,
-                    )
-                    Spacer(Modifier.height(8.dp))
                     LZSecondaryButton(
                         text = "Ouvrir mon compte",
                         onClick = onAvatarClick,

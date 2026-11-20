@@ -26,6 +26,7 @@ import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Email
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Phone
+import androidx.compose.material.icons.rounded.School
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -80,9 +81,9 @@ internal fun rememberAdminLocalPhoto(): Painter? {
 
 @Composable
 fun AdminProfileScreen(
-    onNavigateBack: () -> Unit,
     onShowMessage: (String) -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenAcademy: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -197,6 +198,24 @@ fun AdminProfileScreen(
                     onClick = onOpenSettings,
                     modifier = Modifier.fillMaxWidth(),
                     leadingIcon = Icons.Rounded.Settings,
+                )
+            }
+
+            // Academy • the rest of the admin tools, one tap away at the bottom of the profile.
+            LZCard(modifier = Modifier.fillMaxWidth()) {
+                LZText("Academy", style = LZ.type.cardTitle)
+                Spacer(Modifier.height(6.dp))
+                LZText(
+                    "Packs, abonnements, sauvegardes et informations de l'établissement.",
+                    style = LZ.type.secondary,
+                    color = LZ.colors.textSecondary,
+                )
+                Spacer(Modifier.height(12.dp))
+                LZSecondaryButton(
+                    text = "Academy",
+                    onClick = onOpenAcademy,
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = Icons.Rounded.School,
                 )
             }
         }

@@ -236,7 +236,7 @@ fun TeacherShowcaseSection(
             modifier = Modifier.padding(horizontal = LZSize.ScreenPadding),
         )
         LazyRow(
-            contentPadding = PaddingValues(horizontal = LZSize.ScreenPadding),
+            contentPadding = PaddingValues(horizontal = 0.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             items(teachers, key = { it.id }) { teacher ->

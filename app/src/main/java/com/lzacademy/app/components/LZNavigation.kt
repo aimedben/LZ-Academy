@@ -32,7 +32,6 @@ import androidx.compose.material.icons.outlined.ManageAccounts
 import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material.icons.outlined.People
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.BarChart
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.Chat
@@ -44,7 +43,6 @@ import androidx.compose.material.icons.rounded.ManageAccounts
 import androidx.compose.material.icons.rounded.MenuBook
 import androidx.compose.material.icons.rounded.People
 import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.Icon
@@ -194,7 +192,7 @@ fun TeacherBottomNavigation(
     LZBottomBar(items, selectedRoute, onSelect, modifier)
 }
 
-/** Administration tabs: Dashboard, Gestion, Communiquer, Rapports, Plus. */
+/** Administration tabs: Dashboard, Gestion, Communiquer, Rapports, Profil. */
 @Composable
 fun AdminBottomNavigation(
     selectedRoute: String?,
@@ -207,7 +205,7 @@ fun AdminBottomNavigation(
             LZNavItem(LZRoutes.AdminManagement, "Gestion", Icons.Outlined.ManageAccounts, Icons.Rounded.ManageAccounts),
             LZNavItem(LZRoutes.AdminCommunication, "Communiquer", Icons.Outlined.Chat, Icons.Rounded.Chat),
             LZNavItem(LZRoutes.AdminReports, "Rapports", Icons.Outlined.BarChart, Icons.Rounded.BarChart),
-            LZNavItem(LZRoutes.AdminMore, "Plus", Icons.Outlined.Apps, Icons.Rounded.Apps),
+            LZNavItem(LZRoutes.AdminProfile, "Profil", Icons.Outlined.Person, Icons.Rounded.Person),
         )
     }
     LZBottomBar(items, selectedRoute, onSelect, modifier, accent = LZ.colors.purple)
