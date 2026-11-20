@@ -53,7 +53,6 @@ import com.lzacademy.app.models.LessonAccent
 import com.lzacademy.app.models.PaymentStatus
 import com.lzacademy.app.models.TimelineState
 import com.lzacademy.app.theme.LZ
-import com.lzacademy.app.theme.LZPalette
 import com.lzacademy.app.theme.LZShapes
 import com.lzacademy.app.theme.LZSize
 
@@ -150,8 +149,8 @@ fun LZKpiTile(
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         Icon(icon, null, tint = accent, modifier = Modifier.size(22.dp))
-        LZText(value, style = LZ.type.stat.copy(fontSize = 21.sp), color = LZPalette.TextPrimary, maxLines = 1)
-        LZText(label, style = LZ.type.labelSmall, color = LZPalette.TextPrimary.copy(alpha = 0.7f), maxLines = 1)
+        LZText(value, style = LZ.type.stat.copy(fontSize = 21.sp), color = LZ.colors.textPrimary, maxLines = 1)
+        LZText(label, style = LZ.type.labelSmall, color = LZ.colors.textPrimary.copy(alpha = 0.7f), maxLines = 1)
     }
 }
 
@@ -311,6 +310,7 @@ fun LZCalendarDayItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     hasLesson: Boolean = false,
+    isToday: Boolean = false,
 ) {
     val c = LZ.colors
     val bg by animateColorAsState(if (selected) c.primary else c.surface, label = "dayBg")
@@ -326,12 +326,22 @@ fun LZCalendarDayItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        LZText(dayLabel, style = LZ.type.labelSmall, color = sub, maxLines = 1)
+        LZText(dayLabel, style = LZ.type.labelSmall, color = if (isToday && !selected) c.primary else sub, maxLines = 1)
         LZText(dayNumber.toString(), style = LZ.type.cardTitle, color = fg, maxLines = 1)
         Box(
             Modifier
                 .size(5.dp)
                 .background(if (hasLesson) (if (selected) Color.White else c.primary) else Color.Transparent, CircleShape),
+        )
+        // "Aujourd'hui" marker: thin accent bar, legible on both surfaces.
+        Box(
+            Modifier
+                .width(16.dp)
+                .height(3.dp)
+                .background(
+                    if (!isToday) Color.Transparent else if (selected) Color.White else c.primary,
+                    CircleShape,
+                ),
         )
     }
 }

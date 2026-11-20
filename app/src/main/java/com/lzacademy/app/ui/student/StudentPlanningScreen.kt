@@ -1,5 +1,6 @@
 package com.lzacademy.app.ui.student
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +23,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.EventBusy
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Person
@@ -55,7 +55,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lzacademy.app.components.LZCalendarDayItem
-import com.lzacademy.app.components.LZCard
 import com.lzacademy.app.components.LZDashboardSkeleton
 import com.lzacademy.app.components.LZEmptyState
 import com.lzacademy.app.components.LZFilterChip
@@ -65,7 +64,6 @@ import com.lzacademy.app.components.LZLessonCard
 import com.lzacademy.app.components.LZPrimaryButton
 import com.lzacademy.app.components.LZSecondaryButton
 import com.lzacademy.app.components.LZSectionHeader
-import com.lzacademy.app.components.LZStatusPill
 import com.lzacademy.app.components.LZText
 import com.lzacademy.app.components.color
 import com.lzacademy.app.data.FrenchDates
@@ -108,7 +106,7 @@ fun StudentPlanningScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 private fun StudentPlanningContent(
     data: StudentDashboardData,
@@ -154,7 +152,6 @@ private fun StudentPlanningContent(
         else filter { it.subject.contains(subjectFilter, ignoreCase = true) }
 
     val dayLessons = data.lessonsByDay[selectedDayIndex].orEmpty().filtered()
-    val doneCount = dayLessons.count { it.done }
 
     Column(
         modifier = modifier
@@ -208,6 +205,7 @@ private fun StudentPlanningContent(
                             dayNumber = day.number,
                             selected = mode == PlanningMode.Day && selectedDayIndex == day.index,
                             hasLesson = data.lessonsByDay[day.index]?.isNotEmpty() == true,
+                            isToday = day.index == data.todayIndex,
                             onClick = {
                                 selectedDayIndex = day.index
                                 mode = PlanningMode.Day
@@ -237,40 +235,29 @@ private fun StudentPlanningContent(
             }
 
             if (mode == PlanningMode.Day) {
-                // 4a. Day summary
+                // 4a. Day header (light): real day + real session count, no decorative card
                 item {
-                    LZCard(
+                    Row(
                         modifier = Modifier
+                            .fillMaxWidth()
                             .padding(horizontal = LZSize.ScreenPadding)
-                            .fillMaxWidth(),
+                            .padding(top = 4.dp, bottom = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Column {
-                                LZText(
-                                    FrenchDates.dayLong.getOrElse(selectedDayIndex) { "Ce jour" },
-                                    style = LZ.type.cardTitle,
-                                )
-                                LZText(
-                                    if (dayLessons.isEmpty()) "Aucune séance"
-                                    else "${dayLessons.size} séance(s) • $doneCount terminée(s)",
-                                    style = LZ.type.secondary,
-                                    color = LZ.colors.textSecondary,
-                                )
-                            }
-                            if (selectedDayIndex == data.todayIndex) {
-                                LZStatusPill(
-                                    text = "Aujourd'hui",
-                                    color = LZ.colors.primary,
-                                    background = LZ.colors.surfaceSoft,
-                                    icon = Icons.Rounded.CalendarMonth,
-                                )
-                            } else {
-                                LZSecondaryButton("Aujourd'hui", { selectedDayIndex = data.todayIndex })
-                            }
+                        LZText(
+                            buildString {
+                                append(FrenchDates.dayLong.getOrElse(selectedDayIndex) { "Ce jour" })
+                                val number = data.week.getOrElse(selectedDayIndex) { null }?.number
+                                if (number != null) append(" $number")
+                                append(" • ")
+                                if (dayLessons.isEmpty()) append("Aucune séance")
+                                else append("${dayLessons.size} séance(s)")
+                            },
+                            style = LZ.type.sectionTitle,
+                        )
+                        if (selectedDayIndex != data.todayIndex) {
+                            LZSecondaryButton("Aujourd'hui", { selectedDayIndex = data.todayIndex })
                         }
                     }
                 }
@@ -313,10 +300,13 @@ private fun StudentPlanningContent(
                 } else {
                     daysWithLessons.forEach { day ->
                         val lessons = data.lessonsByDay[day.index].orEmpty().filtered()
-                        item(key = "h_${day.index}") {
+                        stickyHeader(key = "h_${day.index}") {
                             LZSectionHeader(
                                 title = "${FrenchDates.dayLong.getOrElse(day.index) { day.label }} ${day.number}",
-                                modifier = Modifier.padding(horizontal = LZSize.ScreenPadding),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(LZ.colors.background)
+                                    .padding(horizontal = LZSize.ScreenPadding, vertical = 6.dp),
                             )
                         }
                         items(lessons) { lesson ->
@@ -387,14 +377,6 @@ private fun StudentPlanningContent(
                 DetailLine(Icons.Rounded.LocationOn, lesson.room, lesson.accent.color())
                 DetailLine(Icons.Rounded.Person, lesson.person, lesson.accent.color())
                 Spacer(Modifier.height(6.dp))
-                LZSecondaryButton(
-                    "Ajouter un rappel",
-                    {
-                        onShowMessage("Rappel programmé 15 min avant le cours de ${lesson.subject}")
-                        selectedLesson = null
-                    },
-                    Modifier.fillMaxWidth(),
-                )
                 LZPrimaryButton("Fermer", { selectedLesson = null }, Modifier.fillMaxWidth())
             }
         }

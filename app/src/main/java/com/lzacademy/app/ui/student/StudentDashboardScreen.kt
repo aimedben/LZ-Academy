@@ -1,6 +1,5 @@
 package com.lzacademy.app.ui.student
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.CircleShape
@@ -38,6 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lzacademy.app.components.LZCalendarDayItem
 import com.lzacademy.app.components.LZDashboardSkeleton
 import com.lzacademy.app.components.LZEmptyState
 import com.lzacademy.app.components.LZGraduationIllustration
@@ -46,9 +47,9 @@ import com.lzacademy.app.components.LZGreetingRow
 import com.lzacademy.app.components.LZHeaderIconButton
 import com.lzacademy.app.components.rememberRemoteAvatar
 import com.lzacademy.app.components.LZHeroCard
+import com.lzacademy.app.components.LZKpiTile
 import com.lzacademy.app.components.LZSectionHeader
-import com.lzacademy.app.components.LZStatCard
-import com.lzacademy.app.components.LZSubscriptionCard
+import com.lzacademy.app.components.LZSecondaryButton
 import com.lzacademy.app.components.LZText
 import com.lzacademy.app.components.TeacherShowcaseSection
 import com.lzacademy.app.components.overlapTop
@@ -72,6 +73,7 @@ class StudentDashboardActions(
     val onBellClick: () -> Unit = {},
     val onAvatarClick: () -> Unit = {},
     val onNextLessonClick: () -> Unit = {},
+    val onDayClick: (Int) -> Unit = {},
     val onSubscriptionClick: () -> Unit = {},
     val onSeeAllNews: () -> Unit = {},
     val onAnnouncementOpened: (String) -> Unit = {},
@@ -143,19 +145,14 @@ fun StudentDashboardRoute(
             val display = s.data.copy(remainingSessions = remaining, totalSessions = total)
             StudentDashboardScreen(
                 data = display,
-                statusLabel = subscriptionStatusLabel(display.remainingSessions),
                 modifier = modifier,
                 featuredTeachers = featuredTeachers,
                 showNotificationBadge = notificationsEnabled,
                 actions = StudentDashboardActions(
                     onBellClick = { onNavigate(LZRoutes.StudentNotifications) },
                     onAvatarClick = onAvatarClick,
-                    onNextLessonClick = {
-                        val lesson = display.nextLesson
-                        if (lesson != null) {
-                            onShowMessage("${lesson.subject} à ${lesson.whenLabel} • ${lesson.room}")
-                        }
-                    },
+                    onNextLessonClick = { onNavigate(LZRoutes.StudentPlanning) },
+                    onDayClick = { onNavigate(LZRoutes.StudentPlanning) },
                     onSubscriptionClick = {
                         onShowMessage(
                             "Abonnement • $remaining/$total séances restantes • $statusText • renouvellement auprès de l'administration",
@@ -176,13 +173,16 @@ fun StudentDashboardRoute(
 @Composable
 fun StudentDashboardScreen(
     data: StudentDashboardData,
-    statusLabel: String,
     modifier: Modifier = Modifier,
     featuredTeachers: List<Teacher> = emptyList(),
     showNotificationBadge: Boolean = true,
     actions: StudentDashboardActions = StudentDashboardActions(),
 ) {
     val c = LZ.colors
+    // Derive the "next session" KPI from the real whenLabel — no new model field.
+    val whenLabel = data.nextLesson?.whenLabel.orEmpty()
+    val nextDay = whenLabel.substringBefore(" à ", "").ifBlank { "—" }
+    val nextTime = whenLabel.substringAfter(" à ", "").ifBlank { "—" }
 
     Column(
         modifier
@@ -209,26 +209,57 @@ fun StudentDashboardScreen(
             }
         }
 
+        // KPI row • one real value per tile (subscription, subjects, next session)
         Row(
             Modifier.padding(horizontal = 20.dp).overlapTop(50.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            LZStatCard(
+            LZKpiTile(
                 icon = Icons.Rounded.CalendarMonth,
-                value = data.remainingSessions.toString(),
+                value = "${data.remainingSessions}/${data.totalSessions}",
                 label = "Séances restantes",
+                container = c.surfaceSoft,
+                accent = LessonAccent.Blue.color(),
                 modifier = Modifier.weight(1f),
-                containerColor = c.surfaceSoft,
                 onClick = actions.onSubscriptionClick,
             )
-            LZStatCard(
+            LZKpiTile(
                 icon = Icons.Rounded.MenuBook,
                 value = data.activeSubjects.toString(),
                 label = "Matières actives",
+                container = c.surfaceSoft,
+                accent = LessonAccent.Violet.color(),
                 modifier = Modifier.weight(1f),
-                accent = LessonAccent.Violet,
-                containerColor = c.surfaceSoft,
             )
+            LZKpiTile(
+                icon = Icons.Rounded.Schedule,
+                value = nextTime,
+                label = nextDay,
+                container = c.surfaceSoft,
+                accent = LessonAccent.Green.color(),
+                modifier = Modifier.weight(1f),
+                onClick = actions.onNextLessonClick,
+            )
+        }
+
+        // Week strip • real lessons per day, tap jumps to the planning
+        Column(
+            Modifier.padding(horizontal = 20.dp).padding(top = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            LZSectionHeader("Cette semaine")
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                data.week.forEach { day ->
+                    LZCalendarDayItem(
+                        dayLabel = day.label,
+                        dayNumber = day.number,
+                        selected = day.index == data.todayIndex,
+                        hasLesson = data.lessonsByDay[day.index].orEmpty().isNotEmpty(),
+                        onClick = { actions.onDayClick(day.index) },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
         }
 
         Column(
@@ -250,6 +281,14 @@ fun StudentDashboardScreen(
                             size = 112.dp,
                         )
                     },
+                    action = {
+                        LZSecondaryButton(
+                            text = "Voir le planning",
+                            onClick = actions.onNextLessonClick,
+                            modifier = Modifier.fillMaxWidth(),
+                            height = 40.dp,
+                        )
+                    },
                 )
             } else {
                 LZHeroCard(
@@ -265,16 +304,16 @@ fun StudentDashboardScreen(
                             size = 112.dp,
                         )
                     },
+                    action = {
+                        LZSecondaryButton(
+                            text = "Voir le planning",
+                            onClick = actions.onNextLessonClick,
+                            modifier = Modifier.fillMaxWidth(),
+                            height = 40.dp,
+                        )
+                    },
                 )
             }
-
-            // Subscription • read-only for the student: only the administration renews.
-            LZSubscriptionCard(
-                remaining = data.remainingSessions,
-                total = data.totalSessions,
-                statusLabel = statusLabel,
-                onClick = actions.onSubscriptionClick,
-            )
 
             // Featured teachers
             TeacherShowcaseSection(
@@ -331,10 +370,6 @@ private fun KidNewsCard(
 
 // ---------------------------------------------------------------- previews
 
-/** Label shown everywhere the student views the pack: derived, never stored. */
-internal fun subscriptionStatusLabel(remaining: Int): String =
-    if (remaining <= 0) "épuisé" else "Actif"
-
 @Preview(name = "Élève • clair", showBackground = true, widthDp = 393, heightDp = 1500)
 @Composable
 private fun StudentDashboardPreviewLight() {
@@ -342,7 +377,6 @@ private fun StudentDashboardPreviewLight() {
         val data = PreviewSamples.student(java.time.LocalDate.of(2026, 11, 3), java.time.LocalTime.of(10, 30))
         StudentDashboardScreen(
             data,
-            statusLabel = subscriptionStatusLabel(data.remainingSessions),
             featuredTeachers = PreviewSamples.featured,
         )
     }
@@ -358,7 +392,6 @@ private fun StudentDashboardPreviewDark() {
         val data = PreviewSamples.student(java.time.LocalDate.of(2026, 11, 3), java.time.LocalTime.of(10, 30))
         StudentDashboardScreen(
             data,
-            statusLabel = subscriptionStatusLabel(data.remainingSessions),
             featuredTeachers = PreviewSamples.featured,
         )
     }
@@ -371,7 +404,6 @@ private fun StudentDashboardPreviewSmall() {
         val data = PreviewSamples.student(java.time.LocalDate.of(2026, 11, 7), java.time.LocalTime.of(9, 0))
         StudentDashboardScreen(
             data,
-            statusLabel = subscriptionStatusLabel(data.remainingSessions),
             featuredTeachers = PreviewSamples.featured,
         )
     }
